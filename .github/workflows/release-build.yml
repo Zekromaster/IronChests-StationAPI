@@ -1,0 +1,89 @@
+name: Build Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        type: choice
+        description: 'Which version to bump'
+        options:
+          - 'major'
+          - 'minor'
+          - 'patch'
+        default: 'minor'
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  GITHUB_USE_PACKAGE_REGISTRY: true
+  MODRINTH_USE: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Read version
+        id: version
+        run: echo "VERSION=$(cat gradle.properties | grep next_version | cut -d= -f2)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build with Gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: build -Preleasing
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "${{ steps.version.outputs.VERSION }}"
+          prerelease: false
+          title: "v${{ steps.version.outputs.VERSION }}"
+          files: |
+            build/libs/*.jar
+
+      - name: Publish maven package
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: upload -Preleasing
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+
+      - name: Calculate version bumps
+        id: version-bumps
+        uses: "WyriHaximus/github-action-next-semvers@v1"
+        with:
+          version: ${{ steps.version.outputs.VERSION }}
+
+      - name: Select next version
+        id: select-next-version
+        run: |-
+          case ${{ github.event.inputs.bump }} in
+            major) echo "NEXT_VERSION=${{ steps.version-bumps.outputs.major }}" >> "$GITHUB_OUTPUT";;
+            minor) echo "NEXT_VERSION=${{ steps.version-bumps.outputs.minor }}" >> "$GITHUB_OUTPUT";;
+            patch) echo "NEXT_VERSION=${{ steps.version-bumps.outputs.patch }}" >> "$GITHUB_OUTPUT";;
+          esac
+
+      - name: Change version
+        run: sed -Ei 's/next_version=(.*)/next_version=${{ steps.select-next-version.outputs.NEXT_VERSION }}/' gradle.properties
+
+      - name: Commit version change
+        run: |-
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add gradle.properties
+          git commit -m "chore: Bump version to ${{ steps.select-next-version.outputs.NEXT_VERSION }}"
+          git push

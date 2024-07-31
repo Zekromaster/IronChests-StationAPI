@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "id": "ironchests",
+  "version": "${version}",
+
+  "name": "Iron Chests",
+  "description": "Port to StAPI of Iron Chests by cpw",
+  "authors": ["Zekromaster"],
+  "contact": {
+    "sources": "https://github.com/Zekromaster/ArmorOverhaul"
+  },
+
+  "license": "GPL-3.0-or-later",
+  "icon": "assets/ironchests/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "stationapi:event_bus": [
+      {
+        "adapter": "kotlin",
+        "value": "net.zekromaster.minecraft.ironchests.RegisterGUIs"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "net.zekromaster.minecraft.ironchests.IronChests"
+      }
+    ],
+    "stationapi:event_bus_client": [],
+    "stationapi:event_bus_server": []
+  },
+  "mixins": [
+    "ironchests.mixins.json"
+  ],
+
+  "depends": {
+    "minecraft": "1.0.0-beta.7.3",
+    "stationapi": ">=2.0-alpha.2",
+    "fabric-language-kotlin": ">=1.11.0+kotlin.2.0.0"
+  }
+}

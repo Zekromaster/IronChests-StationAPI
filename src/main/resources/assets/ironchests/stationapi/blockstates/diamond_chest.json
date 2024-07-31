@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "ironchests:block/diamond_chest",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "ironchests:block/diamond_chest"
+    },
+    "facing=south": {
+      "model": "ironchests:block/diamond_chest",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "ironchests:block/diamond_chest",
+      "y": 270
+    }
+  }
+}
