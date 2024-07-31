@@ -7,8 +7,6 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.inventory.Inventory
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
-import net.minecraft.recipe.CraftingRecipeManager
-import net.modificationstation.stationapi.api.client.event.texture.TextureRegisterEvent
 import net.modificationstation.stationapi.api.event.block.entity.BlockEntityRegisterEvent
 import net.modificationstation.stationapi.api.event.recipe.RecipeRegisterEvent
 import net.modificationstation.stationapi.api.event.registry.BlockRegistryEvent
@@ -18,8 +16,6 @@ import net.modificationstation.stationapi.api.util.Identifier
 import uk.co.benjiweber.expressions.tuple.BiTuple
 import java.util.function.BiFunction
 import java.util.function.Supplier
-
-data class ChestWithId(val identifier: Identifier, val block: Block)
 
 object IronChests {
 
@@ -114,12 +110,4 @@ internal object RegisterGUIs {
             IronChestFactory(IronChestMaterial.DIAMOND)
         ))
     }
-}
-
-internal object RegisterTextures {
-
-    fun registerTextures(event: TextureRegisterEvent) {
-
-    }
-
 }

@@ -170,7 +170,7 @@ if (use_modrinth) {
         loaders.add("fabric")
         dependencies {
             required.project("stationapi")
-            required.version("fabric-language-kotlin", ">=1.11.0+kotlin.2.0.0")
+            required.project("fabric-language-kotlin")
         }
         syncBodyFrom = project.file("README.md").readText(Charset.forName("UTF-8"))
     }
