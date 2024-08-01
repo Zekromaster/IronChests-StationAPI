@@ -1,5 +1,9 @@
 package net.zekromaster.minecraft.ironchests
 
+import net.minecraft.entity.player.PlayerEntity
+import net.modificationstation.stationapi.api.util.math.Direction
+import kotlin.math.floor
+
 data class IronChestGrid(val rows: Int, val columns: Int) {
     val size = rows * columns
 }
@@ -21,5 +25,16 @@ enum class IronChestMaterial(val id: String, val grid: IronChestGrid) {
                 else -> IRON
             }
 
+    }
+}
+
+fun PlayerEntity.placementFacing(): Direction {
+    val direction = floor((this.yaw * 4.0f / 360.0f).toDouble() + 0.5).toInt() and 3
+    return when (direction) {
+        0 -> Direction.NORTH
+        1 -> Direction.EAST
+        2 -> Direction.SOUTH
+        3 -> Direction.WEST
+        else -> Direction.NORTH
     }
 }

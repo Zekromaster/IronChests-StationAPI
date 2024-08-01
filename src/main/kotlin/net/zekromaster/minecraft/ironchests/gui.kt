@@ -2,13 +2,50 @@ package net.zekromaster.minecraft.ironchests
 
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
+import net.mine_diver.unsafeevents.listener.EventListener
+import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.ingame.HandledScreen
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.inventory.Inventory
 import net.minecraft.screen.ScreenHandler
 import net.minecraft.screen.slot.Slot
+import net.modificationstation.stationapi.api.event.registry.GuiHandlerRegistryEvent
+import net.modificationstation.stationapi.api.util.Identifier
 import org.lwjgl.opengl.GL11
+import uk.co.benjiweber.expressions.tuple.BiTuple
+import java.util.function.BiFunction
+import java.util.function.Supplier
 
+internal object RegisterGUIs {
+
+    private class OpenInventory(private val material: IronChestMaterial): BiFunction<PlayerEntity, Inventory, Screen> {
+        override fun apply(player: PlayerEntity, inventory: Inventory): Screen =
+            IronChestScreen(player.inventory, inventory, material)
+    }
+
+    private data class IronChestFactory(val material: IronChestMaterial): Supplier<Inventory> {
+        override fun get(): IronChestBlockEntity = IronChestBlockEntity(material)
+    }
+
+    @EventListener
+    fun registerGUIs(event: GuiHandlerRegistryEvent) {
+        event.registry.registerValueNoMessage(
+            Identifier.of("ironchests:gui_iron"), BiTuple.of(
+            OpenInventory(IronChestMaterial.IRON),
+            IronChestFactory(IronChestMaterial.IRON)
+        ))
+        event.registry.registerValueNoMessage(
+            Identifier.of("ironchests:gui_gold"), BiTuple.of(
+            OpenInventory(IronChestMaterial.GOLD),
+            IronChestFactory(IronChestMaterial.GOLD)
+        ))
+        event.registry.registerValueNoMessage(
+            Identifier.of("ironchests:gui_diamond"), BiTuple.of(
+            OpenInventory(IronChestMaterial.DIAMOND),
+            IronChestFactory(IronChestMaterial.DIAMOND)
+        ))
+    }
+}
 
 private fun IronChestMaterial.gui() =
     when (this) {
@@ -22,10 +59,6 @@ private enum class GUIType(val material: IronChestMaterial, val width: Int, val 
     IRON(IronChestMaterial.IRON, 184, 202, "ironchest.png"),
     GOLD(IronChestMaterial.GOLD, 184, 256, "goldchest.png"),
     DIAMOND(IronChestMaterial.DIAMOND, 238, 256, "diamondchest.png");
-
-    fun handler(playerInventory: Inventory, inventory: Inventory): ScreenHandler =
-        IronChestScreenHandler(this, playerInventory, inventory, width, height)
-
 }
 
 private class IronChestScreenHandler(

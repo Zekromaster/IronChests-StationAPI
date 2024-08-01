@@ -22,7 +22,11 @@
       },
       {
         "adapter": "kotlin",
-        "value": "net.zekromaster.minecraft.ironchests.IronChests"
+        "value": "net.zekromaster.minecraft.ironchests.IronChestsBlockEntrypoint"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "net.zekromaster.minecraft.ironchests.IronChestsUpgradesEntrypoint"
       }
     ],
     "stationapi:event_bus_client": [],

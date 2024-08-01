@@ -1,5 +1,5 @@
 # Iron Chests (StationAPI)
-<img src="https://i.imgur.com/c1DH9VL.png" height=50>
+<img src="https://i.imgur.com/c1DH9VL.png" height=50 alt="Requires Fabric Kotlin">
 
 Basic port of Iron Chests for b1.7.3 with Fabric and [StationAPI](https://github.com/ModificationStation/StationAPI).
 
@@ -13,4 +13,4 @@ unashamedly stole code
 ## Features
 - [x] Iron, Gold and Diamond Chest
 - [ ] Other modded metal chests (Silver, copper, dimando?)
-- [ ] Chest upgrades
+- [x] Chest upgrades
