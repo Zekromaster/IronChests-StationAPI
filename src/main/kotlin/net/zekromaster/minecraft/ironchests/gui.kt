@@ -38,16 +38,16 @@ internal class IronChestScreenHandler(
     playerInventory: Inventory,
     private val chest: IronChestBlockEntity,
 ): ScreenHandler() {
-    val screenWidth = max(24 + (chest.material.columns * 18), 24 + (9*18))
-    val screenHeight = 16 + (chest.material.rows * 18) + 80
+    val screenWidth = max(24 + (chest.columns * 18), 24 + (9*18))
+    val screenHeight = 16 + (chest.rows * 18) + 80
 
     init {
-        val rowLength = 18 * chest.material.columns
+        val rowLength = 18 * chest.columns
         val startX = (screenWidth - rowLength) / 2 + 1
 
-        for (row in 0 until chest.material.rows) {
-            for (column in 0 until chest.material.columns) {
-                addSlot(Slot(chest, column + (row * chest.material.columns), startX + (column * 18), 9 + (row * 18)))
+        for (row in 0 until chest.rows) {
+            for (column in 0 until chest.columns) {
+                addSlot(Slot(chest, column + (row * chest.columns), startX + (column * 18), 9 + (row * 18)))
             }
         }
 
@@ -129,11 +129,11 @@ private class IronChestScreen(
         this.drawTexture(x, lastYTile, 0, 8, 8, 8)
 
         // Slots
-        val slotStartX = x + (this.backgroundWidth - (18 * chest.material.columns)) / 2
+        val slotStartX = x + (this.backgroundWidth - (18 * chest.columns)) / 2
         val slotStartY = 8+y
 
-        for (row in 0 until chest.material.rows) {
-            for (column in 0 until chest.material.columns) {
+        for (row in 0 until chest.rows) {
+            for (column in 0 until chest.columns) {
                 drawTexture(slotStartX + (18 * column), slotStartY + (18 * row), 16, 0, 18, 18)
             }
         }

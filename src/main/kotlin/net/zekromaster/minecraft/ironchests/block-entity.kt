@@ -25,6 +25,11 @@ class IronChestBlockEntity @JvmOverloads constructor(material: IronChestMaterial
 
     var isBlastResistant = false
 
+    val rows: Int
+        get() = material.rows
+    val columns: Int
+        get() = material.columns
+
     override fun size(): Int = material.size
     override fun getName(): String = material.chestName
 
