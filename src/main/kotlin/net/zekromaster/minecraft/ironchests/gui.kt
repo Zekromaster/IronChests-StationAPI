@@ -16,7 +16,7 @@ import uk.co.benjiweber.expressions.tuple.BiTuple
 import java.util.function.BiFunction
 import java.util.function.Supplier
 
-internal object RegisterGUIs {
+internal object IronChestsGUIEntrypoint {
 
     private class OpenInventory(private val material: IronChestMaterial): BiFunction<PlayerEntity, Inventory, Screen> {
         override fun apply(player: PlayerEntity, inventory: Inventory): Screen =
@@ -54,7 +54,6 @@ private fun IronChestMaterial.gui() =
         IronChestMaterial.DIAMOND -> GUIType.DIAMOND
     }
 
-
 private enum class GUIType(val material: IronChestMaterial, val width: Int, val height: Int, val asset: String) {
     IRON(IronChestMaterial.IRON, 184, 202, "ironchest.png"),
     GOLD(IronChestMaterial.GOLD, 184, 256, "goldchest.png"),
@@ -65,25 +64,29 @@ private class IronChestScreenHandler(
     type: GUIType,
     playerInventory: Inventory,
     val chestInventory: Inventory,
-    x: Int,
-    y: Int
+    screenWidth: Int,
+    screenHeight: Int
 ): ScreenHandler() {
     init {
-        for (row in 0 until type.material.grid.rows) {
-            for (col in 0 until type.material.grid.columns) {
-                addSlot(Slot(chestInventory, col + (row * type.material.grid.columns), 12 + (col * 18), 8 + (row * 18)))
+        for (row in 0 until type.material.rows) {
+            for (column in 0 until type.material.columns) {
+                addSlot(Slot(chestInventory, column + (row * type.material.columns), 12 + (column * 18), 8 + (row * 18)))
             }
         }
 
-        val leftCol: Int = ((x - 162) / 2) + 1
+        playerInventory.draw(xOffset = ((screenWidth - 162) / 2) + 1, screenHeight = screenHeight)
+
+    }
+
+    private fun Inventory.draw(xOffset: Int, screenHeight: Int) {
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(playerInventory, col + row * 9 + 9, leftCol + col * 18, y - (4 - row) * 18 - 10))
+                addSlot(Slot(this, col + row * 9 + 9, xOffset + col * 18, screenHeight - (4 - row) * 18 - 10))
             }
         }
 
         for (hotbarSlot in 0 until 9) {
-            addSlot(Slot(playerInventory, hotbarSlot,leftCol + hotbarSlot * 18, y - 24))
+            addSlot(Slot(this, hotbarSlot,xOffset + hotbarSlot * 18, screenHeight - 24))
         }
     }
 
@@ -93,7 +96,7 @@ private class IronChestScreenHandler(
 }
 
 @Environment(EnvType.CLIENT)
-class IronChestScreen(
+private class IronChestScreen(
     private val playerInventory: Inventory,
     private val inventory: Inventory,
     material: IronChestMaterial

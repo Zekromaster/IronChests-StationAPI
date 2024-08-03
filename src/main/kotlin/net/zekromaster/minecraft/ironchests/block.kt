@@ -3,17 +3,14 @@ package net.zekromaster.minecraft.ironchests
 import net.mine_diver.unsafeevents.listener.EventListener
 import net.minecraft.block.Block
 import net.minecraft.block.entity.BlockEntity
-import net.minecraft.block.entity.ChestBlockEntity
 import net.minecraft.block.material.Material
 import net.minecraft.entity.ItemEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NbtCompound
 import net.minecraft.screen.GenericContainerScreenHandler
 import net.minecraft.world.World
 import net.modificationstation.stationapi.api.block.BlockState
-import net.modificationstation.stationapi.api.event.block.entity.BlockEntityRegisterEvent
 import net.modificationstation.stationapi.api.event.recipe.RecipeRegisterEvent
 import net.modificationstation.stationapi.api.event.registry.BlockRegistryEvent
 import net.modificationstation.stationapi.api.gui.screen.container.GuiHelper
@@ -24,19 +21,18 @@ import net.modificationstation.stationapi.api.state.property.EnumProperty
 import net.modificationstation.stationapi.api.template.block.TemplateBlockWithEntity
 import net.modificationstation.stationapi.api.util.Identifier
 import net.modificationstation.stationapi.api.util.math.Direction
-import net.zekromaster.minecraft.ironchests.mixin.ChestInventoryAccessor
+import net.zekromaster.minecraft.ironchests.BlockStates.FACING
 import java.util.*
 import java.util.function.Predicate
 
-
-object IronChestsBlockEntrypoint {
-    @JvmStatic @get:JvmName("ironChest")
+internal object IronChestsBlockEntrypoint {
+    @JvmStatic
     lateinit var IRON_CHEST: IronChestBlock
         private set
-    @JvmStatic @get:JvmName("goldChest")
+    @JvmStatic
     lateinit var GOLD_CHEST: IronChestBlock
         private set
-    @JvmStatic @get:JvmName("diamondChest")
+    @JvmStatic
     lateinit var DIAMOND_CHEST: IronChestBlock
         private set
 
@@ -48,14 +44,6 @@ object IronChestsBlockEntrypoint {
         GOLD_CHEST.setTranslationKey(Identifier.of("ironchests:gold_chest"))
         DIAMOND_CHEST = IronChestBlock(Identifier.of("ironchests:diamond_chest"), IronChestMaterial.DIAMOND)
         DIAMOND_CHEST.setTranslationKey(Identifier.of("ironchests:diamond_chest"))
-    }
-
-    @EventListener
-    internal fun registerTileEntities(event: BlockEntityRegisterEvent) {
-        event.register(
-            IronChestBlockEntity::class.java,
-            "ironchest"
-        )
     }
 
     @EventListener
@@ -93,36 +81,6 @@ object IronChestsBlockEntrypoint {
     }
 }
 
-class IronChestBlockEntity @JvmOverloads constructor(material: IronChestMaterial = IronChestMaterial.IRON): ChestBlockEntity() {
-    var material = material
-        set(x) = run {
-            field = x
-            updateInventorySize()
-        }
-
-    override fun size(): Int = material.size
-    override fun getName(): String = material.chestName
-
-    init {
-        @Suppress("CAST_NEVER_SUCCEEDS")
-        (this as ChestInventoryAccessor).inventory = arrayOfNulls(material.size)
-    }
-
-    override fun readNbt(nbt: NbtCompound) {
-        material = IronChestMaterial.from(nbt.getString("Material").ifBlank { "iron" })
-        super.readNbt(nbt)
-    }
-
-    override fun writeNbt(nbt: NbtCompound) {
-        nbt.putString("Material", material.id)
-        super.writeNbt(nbt)
-    }
-
-    private fun updateInventorySize() {
-        @Suppress("CAST_NEVER_SUCCEEDS")
-        (this as ChestInventoryAccessor).inventory = inventory.copyOf(material.size)
-    }
-}
 
 class IronChestBlock(identifier: Identifier, private val chestMaterial: IronChestMaterial): TemplateBlockWithEntity(identifier, Material.METAL) {
     init {
@@ -134,11 +92,6 @@ class IronChestBlock(identifier: Identifier, private val chestMaterial: IronChes
 
     private val random = Random()
 
-    companion object {
-        @JvmField
-        val FACING: EnumProperty<Direction> = EnumProperty.of("facing", Direction::class.java, Predicate { it.axis.isHorizontal })
-    }
-
     override fun appendProperties(builder: StateManager.Builder<Block, BlockState>) {
         builder.add(FACING)
         super.appendProperties(builder)
@@ -146,9 +99,7 @@ class IronChestBlock(identifier: Identifier, private val chestMaterial: IronChes
 
     override fun getPlacementState(context: ItemPlacementContext): BlockState = defaultState.with(FACING, context.player!!.placementFacing())
 
-    override fun createBlockEntity(): BlockEntity {
-        return IronChestBlockEntity(chestMaterial)
-    }
+    override fun createBlockEntity(): BlockEntity = chestMaterial.createBlockEntity()
 
     override fun onBreak(world: World, x: Int, y: Int, z: Int) {
         val entity = world.getBlockEntity(x, y, z) as IronChestBlockEntity

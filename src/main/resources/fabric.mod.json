@@ -18,11 +18,15 @@
     "stationapi:event_bus": [
       {
         "adapter": "kotlin",
-        "value": "net.zekromaster.minecraft.ironchests.RegisterGUIs"
+        "value": "net.zekromaster.minecraft.ironchests.IronChestsGUIEntrypoint"
       },
       {
         "adapter": "kotlin",
         "value": "net.zekromaster.minecraft.ironchests.IronChestsBlockEntrypoint"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "net.zekromaster.minecraft.ironchests.IronChestsBlockEntityEntrypoint"
       },
       {
         "adapter": "kotlin",

@@ -15,14 +15,11 @@ import net.modificationstation.stationapi.api.tag.TagKey
 import net.modificationstation.stationapi.api.template.item.TemplateItem
 import net.modificationstation.stationapi.api.util.Identifier
 import net.modificationstation.stationapi.api.util.math.Direction
-import net.zekromaster.minecraft.ironchests.IronChestBlock.Companion.FACING
+import net.zekromaster.minecraft.ironchests.BlockStates.FACING
 import net.zekromaster.minecraft.ironchests.IronChestMaterial.*
-import net.zekromaster.minecraft.ironchests.IronChestsBlockEntrypoint.DIAMOND_CHEST
-import net.zekromaster.minecraft.ironchests.IronChestsBlockEntrypoint.GOLD_CHEST
-import net.zekromaster.minecraft.ironchests.IronChestsBlockEntrypoint.IRON_CHEST
 import net.zekromaster.minecraft.ironchests.mixin.ChestInventoryAccessor
 
-object IronChestsUpgradesEntrypoint {
+internal object IronChestsUpgradesEntrypoint {
 
     @JvmStatic @get:JvmName("woodToIron")
     lateinit var WOOD_TO_IRON: ChestUpgrade
@@ -85,13 +82,6 @@ object IronChestsUpgradesEntrypoint {
     }
 }
 
-fun IronChestMaterial.block(): Block =
-    when (this) {
-        IRON -> IRON_CHEST
-        GOLD -> GOLD_CHEST
-        DIAMOND -> DIAMOND_CHEST
-    }
-
 sealed class ChestUpgrade(identifier: Identifier, private val destination: IronChestMaterial): TemplateItem(identifier) {
     fun upgrade(world: World, x: Int, y: Int, z: Int, player: PlayerEntity, blockEntity: ChestBlockEntity): Boolean {
         if (canUpgrade(blockEntity)) {
@@ -100,7 +90,7 @@ sealed class ChestUpgrade(identifier: Identifier, private val destination: IronC
             val oldBlock = blockEntity.block
 
             (blockEntity as ChestInventoryAccessor).inventory = arrayOfNulls(blockEntity.size())
-            world.setBlock(x, y, z, destination.block().id)
+            world.setBlock(x, y, z, destination.getBlock().id)
 
             if (oldBlock is IronChestBlock) {
                 world.setBlockState(x, y, z, world.getBlockState(x, y, z).with(FACING, oldBlockState.get(FACING) ?: Direction.NORTH))
@@ -119,7 +109,6 @@ sealed class ChestUpgrade(identifier: Identifier, private val destination: IronC
     }
 
     protected abstract fun canUpgrade(blockEntity: ChestBlockEntity): Boolean
-
 }
 
 class WoodToIronUpgrade(identifier: Identifier, destination: IronChestMaterial): ChestUpgrade(identifier, destination) {
