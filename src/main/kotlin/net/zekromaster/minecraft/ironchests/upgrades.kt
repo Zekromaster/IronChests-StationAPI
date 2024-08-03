@@ -17,6 +17,7 @@ import net.modificationstation.stationapi.api.util.Identifier
 import net.modificationstation.stationapi.api.util.math.Direction
 import net.zekromaster.minecraft.ironchests.IronChestsBlockStates.FACING
 import net.zekromaster.minecraft.ironchests.IronChestMaterial.*
+import net.zekromaster.minecraft.ironchests.IronChestsBlockStates.HAS_OBSIDIAN_UPGRADE
 import net.zekromaster.minecraft.ironchests.mixin.ChestInventoryAccessor
 
 internal object IronChestsUpgradesEntrypoint {
@@ -110,7 +111,10 @@ private sealed class TierUpgrade(identifier: Identifier, private val destination
             world.setBlock(x, y, z, destination.getBlock().id)
 
             if (oldBlock is IronChestBlock) {
-                world.setBlockState(x, y, z, world.getBlockState(x, y, z).with(FACING, oldBlockState.get(FACING) ?: Direction.NORTH))
+                world.setBlockState(x, y, z, world.getBlockState(x, y, z)
+                    .with(FACING, oldBlockState.get(FACING) ?: Direction.NORTH)
+                    .with(HAS_OBSIDIAN_UPGRADE, oldBlockState.get(HAS_OBSIDIAN_UPGRADE) ?: false)
+                )
             } else {
                 world.setBlockState(x, y, z, world.getBlockState(x, y, z).with(FACING, player.placementFacing()))
             }
@@ -146,12 +150,12 @@ private class ObsidianUpgrade(identifier: Identifier): ChestUpgrade(identifier) 
         blockEntity: ChestBlockEntity
     ): Boolean {
         val blockState = world.getBlockState(x, y, z)
-        if (blockState.block !is IronChestBlock || blockState.get(IronChestsBlockStates.HAS_OBSIDIAN_UPGRADE)) {
+        if (blockState.block !is IronChestBlock || blockState.get(HAS_OBSIDIAN_UPGRADE)) {
             return false
         }
 
         val entity = world.getBlockEntity(x, y, z) as IronChestBlockEntity
-        world.setBlockStateWithNotify(x, y, z, blockState.with(IronChestsBlockStates.HAS_OBSIDIAN_UPGRADE, true))
+        world.setBlockStateWithNotify(x, y, z, blockState.with(HAS_OBSIDIAN_UPGRADE, true))
         world.setBlockEntity(x, y, z, entity)
         entity.isBlastResistant = true
         world.setBlockDirty(x, y, z)
