@@ -1,18 +1,33 @@
 {
   "variants": {
-    "facing=east": {
+    "facing=east,obsidian=false": {
       "model": "ironchests:block/gold_chest",
       "y": 90
     },
-    "facing=north": {
+    "facing=north,obsidian=false": {
       "model": "ironchests:block/gold_chest"
     },
-    "facing=south": {
+    "facing=south,obsidian=false": {
       "model": "ironchests:block/gold_chest",
       "y": 180
     },
-    "facing=west": {
+    "facing=west,obsidian=false": {
       "model": "ironchests:block/gold_chest",
+      "y": 270
+    },
+    "facing=east,obsidian=true": {
+      "model": "ironchests:block/gold_chest_obsidian",
+      "y": 90
+    },
+    "facing=north,obsidian=true": {
+      "model": "ironchests:block/gold_chest_obsidian"
+    },
+    "facing=south,obsidian=true": {
+      "model": "ironchests:block/gold_chest_obsidian",
+      "y": 180
+    },
+    "facing=west,obsidian=true": {
+      "model": "ironchests:block/gold_chest_obsidian",
       "y": 270
     }
   }

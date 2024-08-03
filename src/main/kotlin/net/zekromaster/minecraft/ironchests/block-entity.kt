@@ -23,6 +23,8 @@ class IronChestBlockEntity @JvmOverloads constructor(material: IronChestMaterial
             updateInventorySize()
         }
 
+    var isBlastResistant = false
+
     override fun size(): Int = material.size
     override fun getName(): String = material.chestName
 
@@ -33,11 +35,13 @@ class IronChestBlockEntity @JvmOverloads constructor(material: IronChestMaterial
 
     override fun readNbt(nbt: NbtCompound) {
         material = IronChestMaterial.from(nbt.getString("Material").ifBlank { "iron" })
+        isBlastResistant = nbt.getBoolean("BlastResistant")
         super.readNbt(nbt)
     }
 
     override fun writeNbt(nbt: NbtCompound) {
         nbt.putString("Material", material.id)
+        nbt.putBoolean("BlastResistant", isBlastResistant)
         super.writeNbt(nbt)
     }
 

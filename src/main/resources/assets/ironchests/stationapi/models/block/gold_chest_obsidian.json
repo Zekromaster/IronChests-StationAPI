@@ -1,0 +1,19 @@
+{
+  "parent": "minecraft:block/cube",
+  "display": {
+    "gui": {
+      "rotation": [ 30, 135, 0 ],
+      "translation": [ 0, 0, 0],
+      "scale":[ 0.625, 0.625, 0.625 ]
+    }
+  },
+  "textures": {
+    "particle": "minecraft:block/gold_block",
+    "down": "ironchests:block/gold_chest_top",
+    "up": "ironchests:block/gold_chest_top",
+    "north": "ironchests:block/gold_chest_front_obsidian",
+    "east": "ironchests:block/gold_chest_side",
+    "south": "ironchests:block/gold_chest_side",
+    "west": "ironchests:block/gold_chest_side"
+  }
+}

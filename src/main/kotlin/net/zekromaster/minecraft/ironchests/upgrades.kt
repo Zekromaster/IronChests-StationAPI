@@ -15,7 +15,7 @@ import net.modificationstation.stationapi.api.tag.TagKey
 import net.modificationstation.stationapi.api.template.item.TemplateItem
 import net.modificationstation.stationapi.api.util.Identifier
 import net.modificationstation.stationapi.api.util.math.Direction
-import net.zekromaster.minecraft.ironchests.BlockStates.FACING
+import net.zekromaster.minecraft.ironchests.IronChestsBlockStates.FACING
 import net.zekromaster.minecraft.ironchests.IronChestMaterial.*
 import net.zekromaster.minecraft.ironchests.mixin.ChestInventoryAccessor
 
@@ -29,6 +29,9 @@ internal object IronChestsUpgradesEntrypoint {
         private set
     @JvmStatic @get:JvmName("goldToDiamond")
     lateinit var GOLD_TO_DIAMOND: ChestUpgrade
+        private set
+    @JvmStatic @get:JvmName("obsidian")
+    lateinit var OBSIDIAN: ChestUpgrade
         private set
 
     @EventListener
@@ -44,6 +47,10 @@ internal object IronChestsUpgradesEntrypoint {
         Identifier.of("ironchests:upgrades/gold_to_diamond").apply {
             GOLD_TO_DIAMOND = IronToIronUpgrade(this, GOLD, DIAMOND)
             GOLD_TO_DIAMOND.setTranslationKey(this)
+        }
+        Identifier.of("ironchests:upgrades/obsidian").apply {
+            OBSIDIAN = ObsidianUpgrade(this)
+            OBSIDIAN.setTranslationKey(this)
         }
     }
 
@@ -82,8 +89,12 @@ internal object IronChestsUpgradesEntrypoint {
     }
 }
 
-sealed class ChestUpgrade(identifier: Identifier, private val destination: IronChestMaterial): TemplateItem(identifier) {
-    fun upgrade(world: World, x: Int, y: Int, z: Int, player: PlayerEntity, blockEntity: ChestBlockEntity): Boolean {
+abstract class ChestUpgrade(identifier: Identifier): TemplateItem(identifier) {
+    abstract fun upgrade(world: World, x: Int, y: Int, z: Int, player: PlayerEntity, blockEntity: ChestBlockEntity): Boolean
+}
+
+private sealed class TierUpgrade(identifier: Identifier, private val destination: IronChestMaterial): ChestUpgrade(identifier) {
+    override fun upgrade(world: World, x: Int, y: Int, z: Int, player: PlayerEntity, blockEntity: ChestBlockEntity): Boolean {
         if (canUpgrade(blockEntity)) {
             val oldBlockState = world.getBlockState(x, y, z)
             val oldContents = (blockEntity as ChestInventoryAccessor).inventory.copyOf()
@@ -111,10 +122,33 @@ sealed class ChestUpgrade(identifier: Identifier, private val destination: IronC
     protected abstract fun canUpgrade(blockEntity: ChestBlockEntity): Boolean
 }
 
-class WoodToIronUpgrade(identifier: Identifier, destination: IronChestMaterial): ChestUpgrade(identifier, destination) {
+private class WoodToIronUpgrade(identifier: Identifier, destination: IronChestMaterial): TierUpgrade(identifier, destination) {
     override fun canUpgrade(blockEntity: ChestBlockEntity) = blockEntity.block == Block.CHEST
 }
 
-class IronToIronUpgrade(identifier: Identifier, val starting: IronChestMaterial, destination: IronChestMaterial): ChestUpgrade(identifier, destination) {
+private class IronToIronUpgrade(identifier: Identifier, val starting: IronChestMaterial, destination: IronChestMaterial): TierUpgrade(identifier, destination) {
     override fun canUpgrade(blockEntity: ChestBlockEntity): Boolean = blockEntity is IronChestBlockEntity && blockEntity.material == starting
+}
+
+private class ObsidianUpgrade(identifier: Identifier): ChestUpgrade(identifier) {
+    override fun upgrade(
+        world: World,
+        x: Int,
+        y: Int,
+        z: Int,
+        player: PlayerEntity,
+        blockEntity: ChestBlockEntity
+    ): Boolean {
+        val blockState = world.getBlockState(x, y, z)
+        if (blockState.block !is IronChestBlock || blockState.get(IronChestsBlockStates.HAS_OBSIDIAN_UPGRADE)) {
+            return false
+        }
+
+        val entity = world.getBlockEntity(x, y, z) as IronChestBlockEntity
+        world.setBlockStateWithNotify(x, y, z, blockState.with(IronChestsBlockStates.HAS_OBSIDIAN_UPGRADE, true))
+        world.setBlockEntity(x, y, z, entity)
+        entity.isBlastResistant = true
+        world.setBlockDirty(x, y, z)
+        return true
+    }
 }

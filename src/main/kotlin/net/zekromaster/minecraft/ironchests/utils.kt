@@ -3,6 +3,7 @@
 package net.zekromaster.minecraft.ironchests
 
 import net.minecraft.entity.player.PlayerEntity
+import net.modificationstation.stationapi.api.state.property.BooleanProperty
 import net.modificationstation.stationapi.api.state.property.EnumProperty
 import net.modificationstation.stationapi.api.util.math.Direction
 import net.zekromaster.minecraft.ironchests.IronChestsBlockEntrypoint.DIAMOND_CHEST
@@ -41,9 +42,11 @@ enum class IronChestMaterial(val id: String, val rows: Int, val columns: Int) {
     }
 }
 
-object BlockStates {
+object IronChestsBlockStates {
     @JvmField
     val FACING: EnumProperty<Direction> = EnumProperty.of("facing", Direction::class.java, Predicate { it.axis.isHorizontal })
+    @JvmField
+    val HAS_OBSIDIAN_UPGRADE: BooleanProperty = BooleanProperty.of("obsidian")
 }
 
 fun PlayerEntity.placementFacing(): Direction {
