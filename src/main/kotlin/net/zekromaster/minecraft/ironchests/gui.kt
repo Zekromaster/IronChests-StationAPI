@@ -19,50 +19,35 @@ import kotlin.math.max
 
 internal object IronChestsGUIEntrypoint {
 
-    private class OpenInventory(private val material: IronChestMaterial): BiFunction<PlayerEntity, Inventory, Screen> {
+    private object OpenInventory: BiFunction<PlayerEntity, Inventory, Screen> {
         override fun apply(player: PlayerEntity, inventory: Inventory): Screen =
-            IronChestScreen(player.inventory, inventory, material)
-    }
-
-    private data class IronChestFactory(val material: IronChestMaterial): Supplier<Inventory> {
-        override fun get(): IronChestBlockEntity = IronChestBlockEntity(material)
+            IronChestScreen(player.inventory, inventory as IronChestBlockEntity)
     }
 
     @EventListener
     fun registerGUIs(event: GuiHandlerRegistryEvent) {
         event.registry.registerValueNoMessage(
-            Identifier.of("ironchests:gui_iron"), BiTuple.of(
-            OpenInventory(IronChestMaterial.IRON),
-            IronChestFactory(IronChestMaterial.IRON)
-        ))
-        event.registry.registerValueNoMessage(
-            Identifier.of("ironchests:gui_gold"), BiTuple.of(
-            OpenInventory(IronChestMaterial.GOLD),
-            IronChestFactory(IronChestMaterial.GOLD)
-        ))
-        event.registry.registerValueNoMessage(
-            Identifier.of("ironchests:gui_diamond"), BiTuple.of(
-            OpenInventory(IronChestMaterial.DIAMOND),
-            IronChestFactory(IronChestMaterial.DIAMOND)
+            Identifier.of("ironchests:iron_chest"), BiTuple.of(
+            OpenInventory,
+            Supplier { IronChestBlockEntity() }
         ))
     }
 }
 
-private class IronChestScreenHandler(
-    material: IronChestMaterial,
+internal class IronChestScreenHandler(
     playerInventory: Inventory,
-    val chestInventory: Inventory,
+    private val chest: IronChestBlockEntity,
 ): ScreenHandler() {
-    val screenWidth = max(24 + (material.columns * 18), 24 + (9*18))
-    val screenHeight = 16 + (material.rows * 18) + 80
+    val screenWidth = max(24 + (chest.material.columns * 18), 24 + (9*18))
+    val screenHeight = 16 + (chest.material.rows * 18) + 80
 
     init {
-        val rowLength = 18 * material.columns
+        val rowLength = 18 * chest.material.columns
         val startX = (screenWidth - rowLength) / 2 + 1
 
-        for (row in 0 until material.rows) {
-            for (column in 0 until material.columns) {
-                addSlot(Slot(chestInventory, column + (row * material.columns), startX + (column * 18), 9 + (row * 18)))
+        for (row in 0 until chest.material.rows) {
+            for (column in 0 until chest.material.columns) {
+                addSlot(Slot(chest, column + (row * chest.material.columns), startX + (column * 18), 9 + (row * 18)))
             }
         }
 
@@ -83,15 +68,14 @@ private class IronChestScreenHandler(
 
 
     override fun canUse(player: PlayerEntity): Boolean =
-        chestInventory.canPlayerUse(player)
+        chest.canPlayerUse(player)
 }
 
 @Environment(EnvType.CLIENT)
 private class IronChestScreen(
     playerInventory: Inventory,
-    inventory: Inventory,
-    private val material: IronChestMaterial
-) : HandledScreen(IronChestScreenHandler(material, playerInventory, inventory)) {
+    val chest: IronChestBlockEntity,
+) : HandledScreen(IronChestScreenHandler(playerInventory, chest)) {
     init {
         this.field_155 = false
         backgroundWidth = (container as IronChestScreenHandler).screenWidth
@@ -145,11 +129,11 @@ private class IronChestScreen(
         this.drawTexture(x, lastYTile, 0, 8, 8, 8)
 
         // Slots
-        val slotStartX = x + (this.backgroundWidth - (18 * material.columns)) / 2
+        val slotStartX = x + (this.backgroundWidth - (18 * chest.material.columns)) / 2
         val slotStartY = 8+y
 
-        for (row in 0 until material.rows) {
-            for (column in 0 until material.columns) {
+        for (row in 0 until chest.material.rows) {
+            for (column in 0 until chest.material.columns) {
                 drawTexture(slotStartX + (18 * column), slotStartY + (18 * row), 16, 0, 18, 18)
             }
         }

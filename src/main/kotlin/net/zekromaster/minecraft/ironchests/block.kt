@@ -8,7 +8,6 @@ import net.minecraft.entity.ItemEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
-import net.minecraft.screen.GenericContainerScreenHandler
 import net.minecraft.world.World
 import net.modificationstation.stationapi.api.block.BlockState
 import net.modificationstation.stationapi.api.event.recipe.RecipeRegisterEvent
@@ -172,7 +171,7 @@ class IronChestBlock(identifier: Identifier, private val chestMaterial: IronChes
             return true
         }
 
-        GuiHelper.openGUI(player, Identifier.of("ironchests:gui_${chestMaterial.id}"), entity, GenericContainerScreenHandler(player.inventory, entity))
+        GuiHelper.openGUI(player, Identifier.of("ironchests:iron_chest"), entity, IronChestScreenHandler(player.inventory, entity))
         return true
     }
 }
