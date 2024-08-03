@@ -15,6 +15,8 @@ import org.lwjgl.opengl.GL11
 import uk.co.benjiweber.expressions.tuple.BiTuple
 import java.util.function.BiFunction
 import java.util.function.Supplier
+import kotlin.math.max
+import kotlin.math.min
 
 internal object IronChestsGUIEntrypoint {
 
@@ -52,13 +54,16 @@ private class IronChestScreenHandler(
     playerInventory: Inventory,
     val chestInventory: Inventory,
 ): ScreenHandler() {
-    val screenWidth = 24 + (material.columns * 18)
+    val screenWidth = max(24 + (material.columns * 18), 24 + (9*18))
     val screenHeight = 16 + (material.rows * 18) + 80
 
     init {
+        val rowLength = 18 * material.columns
+        val startX = (screenWidth - rowLength) / 2 + 1
+
         for (row in 0 until material.rows) {
             for (column in 0 until material.columns) {
-                addSlot(Slot(chestInventory, column + (row * material.columns), 13 + (column * 18), 9 + (row * 18)))
+                addSlot(Slot(chestInventory, column + (row * material.columns), startX + (column * 18), 9 + (row * 18)))
             }
         }
 
@@ -116,7 +121,6 @@ private class IronChestScreen(
             }
         }
 
-
         // Top
         for (drawX in x+8 until lastXTile step 8) {
             this.drawTexture(drawX, y, 4, 0, 8, 8)
@@ -143,7 +147,7 @@ private class IronChestScreen(
         this.drawTexture(x, lastYTile, 0, 8, 8, 8)
 
         // Slots
-        val slotStartX = 12+x
+        val slotStartX = x + (this.backgroundWidth - (18 * material.columns)) / 2
         val slotStartY = 8+y
 
         for (row in 0 until material.rows) {
