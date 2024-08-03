@@ -16,7 +16,6 @@ import uk.co.benjiweber.expressions.tuple.BiTuple
 import java.util.function.BiFunction
 import java.util.function.Supplier
 import kotlin.math.max
-import kotlin.math.min
 
 internal object IronChestsGUIEntrypoint {
 
@@ -110,9 +109,8 @@ private class IronChestScreen(
         val lastXTile = x+width-8
         val lastYTile = y+height-8
 
-        // Top left corner
-        val topLeft = minecraft.textureManager.getTextureId("/assets/ironchests/stationapi/textures/gui/chest.png")
-        minecraft.textureManager.bindTexture(topLeft)
+        val texture = minecraft.textureManager.getTextureId("/assets/ironchests/stationapi/textures/gui/chest.png")
+        minecraft.textureManager.bindTexture(texture)
 
         // Fill
         for (drawX in x+8 until lastXTile step 8) {
