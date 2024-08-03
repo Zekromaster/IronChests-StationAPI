@@ -47,30 +47,18 @@ internal object IronChestsGUIEntrypoint {
     }
 }
 
-private fun IronChestMaterial.gui() =
-    when (this) {
-        IronChestMaterial.IRON -> GUIType.IRON
-        IronChestMaterial.GOLD -> GUIType.GOLD
-        IronChestMaterial.DIAMOND -> GUIType.DIAMOND
-    }
-
-private enum class GUIType(val material: IronChestMaterial, val width: Int, val height: Int, val asset: String) {
-    IRON(IronChestMaterial.IRON, 184, 202, "ironchest.png"),
-    GOLD(IronChestMaterial.GOLD, 184, 256, "goldchest.png"),
-    DIAMOND(IronChestMaterial.DIAMOND, 238, 256, "diamondchest.png");
-}
-
 private class IronChestScreenHandler(
-    type: GUIType,
+    material: IronChestMaterial,
     playerInventory: Inventory,
     val chestInventory: Inventory,
-    screenWidth: Int,
-    screenHeight: Int
 ): ScreenHandler() {
+    val screenWidth = 24 + (material.columns * 18)
+    val screenHeight = 16 + (material.rows * 18) + 76
+
     init {
-        for (row in 0 until type.material.rows) {
-            for (column in 0 until type.material.columns) {
-                addSlot(Slot(chestInventory, column + (row * type.material.columns), 12 + (column * 18), 8 + (row * 18)))
+        for (row in 0 until material.rows) {
+            for (column in 0 until material.columns) {
+                addSlot(Slot(chestInventory, column + (row * material.columns), 13 + (column * 18), 9 + (row * 18)))
             }
         }
 
@@ -80,12 +68,12 @@ private class IronChestScreenHandler(
     private fun Inventory.draw(xOffset: Int, screenHeight: Int) {
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(this, col + row * 9 + 9, xOffset + col * 18, screenHeight - (4 - row) * 18 - 10))
+                addSlot(Slot(this, col + row * 9 + 9, xOffset + col * 18, screenHeight - (4 - row) * 18 - 7))
             }
         }
 
         for (hotbarSlot in 0 until 9) {
-            addSlot(Slot(this, hotbarSlot,xOffset + hotbarSlot * 18, screenHeight - 24))
+            addSlot(Slot(this, hotbarSlot,xOffset + hotbarSlot * 18, screenHeight - 21))
         }
     }
 
@@ -96,27 +84,87 @@ private class IronChestScreenHandler(
 
 @Environment(EnvType.CLIENT)
 private class IronChestScreen(
-    private val playerInventory: Inventory,
-    private val inventory: Inventory,
-    material: IronChestMaterial
-) : HandledScreen(run {
-    val gui = material.gui()
-    IronChestScreenHandler(gui, playerInventory, inventory, gui.width, gui.height)
-}) {
-    private val guiType = material.gui()
-
+    playerInventory: Inventory,
+    inventory: Inventory,
+    private val material: IronChestMaterial
+) : HandledScreen(IronChestScreenHandler(material, playerInventory, inventory)) {
     init {
         this.field_155 = false
-        backgroundWidth = guiType.width
-        backgroundHeight = guiType.height
+        backgroundWidth = (container as IronChestScreenHandler).screenWidth
+        backgroundHeight = (container as IronChestScreenHandler).screenHeight
     }
 
     override fun drawBackground(tickDelta: Float) {
-        val background = minecraft.textureManager.getTextureId("/assets/ironchests/stationapi/textures/gui/${guiType.asset}")
-        GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f)
-        minecraft.textureManager.bindTexture(background)
         val x = (this.width - this.backgroundWidth) / 2
         val y = (this.height - this.backgroundHeight) / 2
-        this.drawTexture(x, y, 0, 0, this.backgroundWidth, this.backgroundHeight)
+        tiledGUI(x, y, this.backgroundWidth, this.backgroundHeight)
     }
+
+    private fun tiledGUI(x: Int, y: Int, width: Int, height: Int) {
+        GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f)
+        val lastXTile = x+width-8
+        val lastYTile = y+height-8
+
+        // Top left corner
+        val topLeft = minecraft.textureManager.getTextureId("/assets/ironchests/stationapi/textures/gui/chest.png")
+        minecraft.textureManager.bindTexture(topLeft)
+
+        this.drawTexture(x, y, 0, 0, 8, 8)
+        // Top
+        for (drawX in x+8 until lastXTile step 8) {
+            this.drawTexture(drawX, y, 4, 0, 8, 8)
+        }
+        // Top right corner
+        this.drawTexture(lastXTile, y, 8, 0, 8 ,8)
+        // Right
+        for (drawY in y+8 until lastYTile step 8) {
+            this.drawTexture(lastXTile, drawY, 8, 4, 8, 8)
+        }
+        // Bottom right corner
+        this.drawTexture(lastXTile, lastYTile, 8, 8, 8 ,8)
+        // Bottom
+        for (drawX in x+8 until lastXTile step 8) {
+            this.drawTexture(drawX, lastYTile, 4, 8, 8, 8)
+        }
+        // Bottom left corner
+        this.drawTexture(x, lastYTile, 0, 8, 8, 8)
+        // Left
+        for (drawY in y+8 until lastYTile step 8) {
+            this.drawTexture(x, drawY, 0, 4, 8, 8)
+        }
+
+        // Fill
+        for (drawX in x+8 until lastXTile step 8) {
+            for (drawY in y+8 until lastYTile step 8) {
+                this.drawTexture(drawX, drawY, 4, 4, 8, 8)
+            }
+        }
+
+        // Slots
+        val slotStartX = 12+x
+        val slotStartY = 8+y
+
+        for (row in 0 until material.rows) {
+            for (column in 0 until material.columns) {
+                drawTexture(slotStartX + (18 * column), slotStartY + (18 * row), 16, 0, 18, 18)
+            }
+        }
+
+        // Inventory
+        val inventoryStartX = x + ((this.backgroundWidth - 162) / 2)
+        val inventoryStartY = y + this.backgroundHeight - 80
+
+        for (row in 0 until 3) {
+            for (column in 0 until 9) {
+                drawTexture(inventoryStartX + (18 * column), inventoryStartY + (18 * row), 16, 0, 18, 18)
+            }
+        }
+
+        val hotbarStartY = inventoryStartY + (3*18) + 4
+        for (column in 0 until 9) {
+            drawTexture(inventoryStartX + (18 * column), hotbarStartY, 16, 0, 18, 18)
+        }
+    }
+
 }
+
