@@ -131,7 +131,6 @@ class IronChestBlock(identifier: Identifier, private val chestMaterial: IronChes
             dropItem(dropX, dropY, dropZ, ItemStack(IronChestsUpgradesEntrypoint.OBSIDIAN, 1))
         }
 
-
         for (index in 0 until entity.size()) {
             val item = entity.getStack(index) ?: continue
             val dropX: Float = this.random.nextFloat() * 0.8f + 0.1f

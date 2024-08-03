@@ -75,7 +75,6 @@ private class IronChestScreenHandler(
         }
 
         playerInventory.draw(xOffset = ((screenWidth - 162) / 2) + 1, screenHeight = screenHeight)
-
     }
 
     private fun Inventory.draw(xOffset: Int, screenHeight: Int) {

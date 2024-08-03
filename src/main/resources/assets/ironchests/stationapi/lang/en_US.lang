@@ -2,7 +2,7 @@ tile.@.iron_chest.name=Iron Chest
 tile.@.gold_chest.name=Gold Chest
 tile.@.diamond_chest.name=Diamond Chest
 
-item.@.upgrades/wood_to_iron.name=Wood to Iron Upgrade
-item.@.upgrades/iron_to_gold.name=Iron to Gold Upgrade
-item.@.upgrades/gold_to_diamond.name=Gold to Diamond Upgrade
-item.@.upgrades/obsidian.name=Obsidian Upgrade
+item.@.upgrades/wood_to_iron.name=Iron Chest Upgrade
+item.@.upgrades/iron_to_gold.name=Gold Chest Upgrade
+item.@.upgrades/gold_to_diamond.name=Diamond Chest Upgrade
+item.@.upgrades/obsidian.name=Obsidian Chest Upgrade
