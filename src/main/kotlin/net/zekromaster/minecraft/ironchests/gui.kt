@@ -53,7 +53,7 @@ private class IronChestScreenHandler(
     val chestInventory: Inventory,
 ): ScreenHandler() {
     val screenWidth = 24 + (material.columns * 18)
-    val screenHeight = 16 + (material.rows * 18) + 76
+    val screenHeight = 16 + (material.rows * 18) + 80
 
     init {
         for (row in 0 until material.rows) {
@@ -68,12 +68,12 @@ private class IronChestScreenHandler(
     private fun Inventory.draw(xOffset: Int, screenHeight: Int) {
         for (row in 0 until 3) {
             for (col in 0 until 9) {
-                addSlot(Slot(this, col + row * 9 + 9, xOffset + col * 18, screenHeight - (4 - row) * 18 - 7))
+                addSlot(Slot(this, col + row * 9 + 9, xOffset + col * 18, screenHeight - (4 - row) * 18 - 11))
             }
         }
 
         for (hotbarSlot in 0 until 9) {
-            addSlot(Slot(this, hotbarSlot,xOffset + hotbarSlot * 18, screenHeight - 21))
+            addSlot(Slot(this, hotbarSlot,xOffset + hotbarSlot * 18, screenHeight - 25))
         }
     }
 
@@ -109,36 +109,38 @@ private class IronChestScreen(
         val topLeft = minecraft.textureManager.getTextureId("/assets/ironchests/stationapi/textures/gui/chest.png")
         minecraft.textureManager.bindTexture(topLeft)
 
-        this.drawTexture(x, y, 0, 0, 8, 8)
-        // Top
-        for (drawX in x+8 until lastXTile step 8) {
-            this.drawTexture(drawX, y, 4, 0, 8, 8)
-        }
-        // Top right corner
-        this.drawTexture(lastXTile, y, 8, 0, 8 ,8)
-        // Right
-        for (drawY in y+8 until lastYTile step 8) {
-            this.drawTexture(lastXTile, drawY, 8, 4, 8, 8)
-        }
-        // Bottom right corner
-        this.drawTexture(lastXTile, lastYTile, 8, 8, 8 ,8)
-        // Bottom
-        for (drawX in x+8 until lastXTile step 8) {
-            this.drawTexture(drawX, lastYTile, 4, 8, 8, 8)
-        }
-        // Bottom left corner
-        this.drawTexture(x, lastYTile, 0, 8, 8, 8)
-        // Left
-        for (drawY in y+8 until lastYTile step 8) {
-            this.drawTexture(x, drawY, 0, 4, 8, 8)
-        }
-
         // Fill
         for (drawX in x+8 until lastXTile step 8) {
             for (drawY in y+8 until lastYTile step 8) {
                 this.drawTexture(drawX, drawY, 4, 4, 8, 8)
             }
         }
+
+
+        // Top
+        for (drawX in x+8 until lastXTile step 8) {
+            this.drawTexture(drawX, y, 4, 0, 8, 8)
+        }
+        // Bottom
+        for (drawX in x+8 until lastXTile step 8) {
+            this.drawTexture(drawX, lastYTile, 4, 8, 8, 8)
+        }
+        // Left
+        for (drawY in y+8 until lastYTile step 8) {
+            this.drawTexture(x, drawY, 0, 4, 8, 8)
+        }
+        // Right
+        for (drawY in y+8 until lastYTile step 8) {
+            this.drawTexture(lastXTile, drawY, 8, 4, 8, 8)
+        }
+        // Top Left corner
+        this.drawTexture(x, y, 0, 0, 8, 8)
+        // Top right corner
+        this.drawTexture(lastXTile, y, 8, 0, 8 ,8)
+        // Bottom right corner
+        this.drawTexture(lastXTile, lastYTile, 8, 8, 8 ,8)
+        // Bottom left corner
+        this.drawTexture(x, lastYTile, 0, 8, 8, 8)
 
         // Slots
         val slotStartX = 12+x
@@ -152,7 +154,7 @@ private class IronChestScreen(
 
         // Inventory
         val inventoryStartX = x + ((this.backgroundWidth - 162) / 2)
-        val inventoryStartY = y + this.backgroundHeight - 80
+        val inventoryStartY = y + this.backgroundHeight - 84
 
         for (row in 0 until 3) {
             for (column in 0 until 9) {
