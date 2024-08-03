@@ -85,6 +85,12 @@ internal object IronChestsUpgradesEntrypoint {
                 'c', ItemStack(Item.GOLD_INGOT),
                 'g', ItemStack(Block.GLASS)
             )
+            CraftingRegistry.addShapedRecipe(
+                ItemStack(OBSIDIAN),
+                "ooo", "oco", "ooo",
+                'o', ItemStack(Block.OBSIDIAN),
+                'c', TagKey.of(ItemRegistry.KEY, Identifier.of("planks"))
+            )
         }
     }
 }
