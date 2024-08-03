@@ -7,6 +7,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.world.World
+import net.modificationstation.stationapi.api.client.item.CustomTooltipProvider
 import net.modificationstation.stationapi.api.event.recipe.RecipeRegisterEvent
 import net.modificationstation.stationapi.api.event.registry.ItemRegistryEvent
 import net.modificationstation.stationapi.api.recipe.CraftingRegistry
@@ -100,7 +101,7 @@ abstract class ChestUpgrade(identifier: Identifier): TemplateItem(identifier) {
     abstract fun upgrade(world: World, x: Int, y: Int, z: Int, player: PlayerEntity, blockEntity: ChestBlockEntity): Boolean
 }
 
-private sealed class TierUpgrade(identifier: Identifier, private val destination: IronChestMaterial): ChestUpgrade(identifier) {
+private sealed class TierUpgrade(identifier: Identifier, protected val destination: IronChestMaterial): ChestUpgrade(identifier) {
     override fun upgrade(world: World, x: Int, y: Int, z: Int, player: PlayerEntity, blockEntity: ChestBlockEntity): Boolean {
         if (canUpgrade(blockEntity)) {
             val oldBlockState = world.getBlockState(x, y, z)
@@ -132,15 +133,19 @@ private sealed class TierUpgrade(identifier: Identifier, private val destination
     protected abstract fun canUpgrade(blockEntity: ChestBlockEntity): Boolean
 }
 
-private class WoodToIronUpgrade(identifier: Identifier, destination: IronChestMaterial): TierUpgrade(identifier, destination) {
+private class WoodToIronUpgrade(identifier: Identifier, destination: IronChestMaterial): TierUpgrade(identifier, destination), CustomTooltipProvider {
     override fun canUpgrade(blockEntity: ChestBlockEntity) = blockEntity.block == Block.CHEST
+
+    override fun getTooltip(stack: ItemStack, originalTooltip: String) = arrayOf(originalTooltip, "Wood to ${destination.displayName}")
 }
 
-private class IronToIronUpgrade(identifier: Identifier, val starting: IronChestMaterial, destination: IronChestMaterial): TierUpgrade(identifier, destination) {
+private class IronToIronUpgrade(identifier: Identifier, val starting: IronChestMaterial, destination: IronChestMaterial): TierUpgrade(identifier, destination), CustomTooltipProvider {
     override fun canUpgrade(blockEntity: ChestBlockEntity): Boolean = blockEntity is IronChestBlockEntity && blockEntity.material == starting
+
+    override fun getTooltip(stack: ItemStack, originalTooltip: String) = arrayOf(originalTooltip, "${starting.displayName} to ${destination.displayName}")
 }
 
-private class ObsidianUpgrade(identifier: Identifier): ChestUpgrade(identifier) {
+private class ObsidianUpgrade(identifier: Identifier): ChestUpgrade(identifier), CustomTooltipProvider {
     override fun upgrade(
         world: World,
         x: Int,
@@ -161,4 +166,6 @@ private class ObsidianUpgrade(identifier: Identifier): ChestUpgrade(identifier) 
         world.setBlockDirty(x, y, z)
         return true
     }
+
+    override fun getTooltip(stack: ItemStack, originalTooltip: String) = arrayOf(originalTooltip, "Makes any non-Wooden Chest blast resistant")
 }

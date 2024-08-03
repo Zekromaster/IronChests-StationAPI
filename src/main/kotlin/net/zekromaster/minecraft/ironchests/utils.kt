@@ -18,7 +18,8 @@ enum class IronChestMaterial(val id: String, val rows: Int, val columns: Int) {
     DIAMOND("diamond", 9, 12);
 
     val size = rows * columns
-    val chestName: String = "${id.replaceFirstChar(Char::uppercaseChar)} Chest"
+    val displayName: String = id.replaceFirstChar(Char::uppercaseChar)
+    val chestName: String = "$displayName Chest"
 
     fun getBlock() =
         when (this) {
