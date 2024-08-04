@@ -7,7 +7,7 @@
   "description": "Port to StAPI of Iron Chests by cpw",
   "authors": ["Zekromaster"],
   "contact": {
-    "sources": "https://github.com/Zekromaster/ArmorOverhaul"
+    "sources": "https://github.com/Zekromaster/IronChests-StationAPI"
   },
 
   "license": "GPL-3.0-or-later",
