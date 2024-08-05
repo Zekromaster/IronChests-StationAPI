@@ -106,7 +106,7 @@ private sealed class TierUpgrade(identifier: Identifier, protected val destinati
         if (canUpgrade(blockEntity)) {
             val oldBlockState = world.getBlockState(x, y, z)
             val oldContents = (blockEntity as ChestInventoryAccessor).inventory.copyOf()
-            val oldBlock = blockEntity.block
+            val oldBlock = oldBlockState.block
 
             (blockEntity as ChestInventoryAccessor).inventory = arrayOfNulls(blockEntity.size())
             world.setBlock(x, y, z, destination.getBlock().id)
