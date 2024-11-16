@@ -5,6 +5,7 @@ import net.minecraft.block.entity.ChestBlockEntity
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.modificationstation.stationapi.api.event.block.entity.BlockEntityRegisterEvent
+import net.zekromaster.minecraft.ironchests.IronChestMaterial.Companion.IRON
 
 internal object IronChestsBlockEntityEntrypoint {
     @EventListener
@@ -16,7 +17,7 @@ internal object IronChestsBlockEntityEntrypoint {
     }
 }
 
-class IronChestBlockEntity @JvmOverloads constructor(material: IronChestMaterial = IronChestMaterial.IRON): ChestBlockEntity() {
+class IronChestBlockEntity @JvmOverloads constructor(material: IronChestMaterial = IRON): ChestBlockEntity() {
     var material: IronChestMaterial = material
         set(x) {
             field = x
@@ -38,12 +39,12 @@ class IronChestBlockEntity @JvmOverloads constructor(material: IronChestMaterial
     }
 
     override fun readNbt(nbt: NbtCompound) {
-        material = IronChestMaterial.from(nbt.getString("Material").ifBlank { "iron" })
+        material = nbt.getString("Material")?.let { IronChestMaterial.from(it) } ?: IRON
         super.readNbt(nbt)
     }
 
     override fun writeNbt(nbt: NbtCompound) {
-        nbt.putString("Material", material.id)
+        nbt.putString("Material", material.id.toString())
         super.writeNbt(nbt)
     }
 

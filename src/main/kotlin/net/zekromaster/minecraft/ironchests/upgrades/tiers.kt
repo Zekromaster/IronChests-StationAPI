@@ -20,14 +20,16 @@ import net.zekromaster.minecraft.ironchests.IronChestsBlockStates.HAS_OBSIDIAN_U
 import net.zekromaster.minecraft.terminal.capabilities.BlockCapability
 import net.zekromaster.minecraft.terminal.capabilities.CapabilityEvents
 import net.zekromaster.minecraft.ironchests.*
-import net.zekromaster.minecraft.ironchests.IronChestMaterial.*
+import net.zekromaster.minecraft.ironchests.IronChestMaterial.Companion.DIAMOND
+import net.zekromaster.minecraft.ironchests.IronChestMaterial.Companion.GOLD
+import net.zekromaster.minecraft.ironchests.IronChestMaterial.Companion.IRON
 
 
 interface Tiered {
 
     val currentTier: IronChestMaterial?
 
-    fun upgrade(destination: IronChestMaterial, player: PlayerEntity?): Boolean
+    fun switchTier(destination: IronChestMaterial, player: PlayerEntity?): Boolean
 
     companion object {
         @JvmStatic @get:JvmName("capability")
@@ -41,7 +43,7 @@ interface Tiered {
 private class VanillaChestTieredImpl(val chest: ChestBlockEntity) : Tiered {
     override val currentTier: IronChestMaterial? = null
 
-    override fun upgrade(destination: IronChestMaterial, player: PlayerEntity?): Boolean {
+    override fun switchTier(destination: IronChestMaterial, player: PlayerEntity?): Boolean {
         val world = chest.world
         val x = chest.x
         val y = chest.y
@@ -63,11 +65,7 @@ private class IronChestTieredImpl(val chest: IronChestBlockEntity) : Tiered {
     override val currentTier: IronChestMaterial
         get() = chest.material
 
-    override fun upgrade(destination: IronChestMaterial, player: PlayerEntity?): Boolean {
-        if (destination < currentTier) {
-            return false
-        }
-
+    override fun switchTier(destination: IronChestMaterial, player: PlayerEntity?): Boolean {
         val world = chest.world
         val x = chest.x
         val y = chest.y
@@ -100,7 +98,7 @@ private class TierUpgrade(identifier: Identifier, val starting: IronChestMateria
             return false
         }
 
-        return tiered.upgrade(destination, player)
+        return tiered.switchTier(destination, player)
     }
 
     override fun getTooltip(stack: ItemStack, originalTooltip: String) = arrayOf(
