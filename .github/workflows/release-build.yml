@@ -17,8 +17,9 @@ permissions:
   packages: write
 
 env:
-  GITHUB_USE_PACKAGE_REGISTRY: true
-  MODRINTH_USE: true
+  GPR_PUBLISH: true
+  GLASS_MAVEN_PUBLISH: true
+  MODRINTH_PUBLISH: true
 
 jobs:
   build:
@@ -38,11 +39,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Build with Gradle
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: build -Preleasing
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew build
 
       - name: Deploy release
         uses: "marvinpinto/action-automatic-releases@latest"
@@ -55,12 +52,12 @@ jobs:
             build/libs/*.jar
 
       - name: Publish maven package
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: upload -Preleasing
+        run: ./gradlew upload -Preleasing
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+          GLASS_MAVEN_USERNAME: ${{ secrets.GLASS_MAVEN_USERNAME }}
+          GLASS_MAVEN_PASSWORD: ${{ secrets.GLASS_MAVEN_PASSWORD }}
 
       - name: Calculate version bumps
         id: version-bumps

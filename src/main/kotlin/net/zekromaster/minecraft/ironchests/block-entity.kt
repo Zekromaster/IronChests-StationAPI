@@ -2,16 +2,16 @@ package net.zekromaster.minecraft.ironchests
 
 import net.mine_diver.unsafeevents.listener.EventListener
 import net.minecraft.block.entity.ChestBlockEntity
+import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.modificationstation.stationapi.api.event.block.entity.BlockEntityRegisterEvent
-import net.zekromaster.minecraft.ironchests.mixin.ChestInventoryAccessor
 
 internal object IronChestsBlockEntityEntrypoint {
     @EventListener
     internal fun registerTileEntities(event: BlockEntityRegisterEvent) {
         event.register(
             IronChestBlockEntity::class.java,
-            "ironchest"
+            "IronChest"
         )
     }
 }
@@ -23,8 +23,6 @@ class IronChestBlockEntity @JvmOverloads constructor(material: IronChestMaterial
             updateInventorySize()
         }
 
-    var isBlastResistant = false
-
     val rows: Int
         get() = material.rows
     val columns: Int
@@ -33,25 +31,23 @@ class IronChestBlockEntity @JvmOverloads constructor(material: IronChestMaterial
     override fun size(): Int = material.size
     override fun getName(): String = material.chestName
 
+    internal val storedUpgrades: MutableList<ItemStack> = mutableListOf()
+
     init {
-        @Suppress("CAST_NEVER_SUCCEEDS")
-        (this as ChestInventoryAccessor).inventory = arrayOfNulls(material.size)
+        inventory(arrayOfNulls(material.size))
     }
 
     override fun readNbt(nbt: NbtCompound) {
         material = IronChestMaterial.from(nbt.getString("Material").ifBlank { "iron" })
-        isBlastResistant = nbt.getBoolean("BlastResistant")
         super.readNbt(nbt)
     }
 
     override fun writeNbt(nbt: NbtCompound) {
         nbt.putString("Material", material.id)
-        nbt.putBoolean("BlastResistant", isBlastResistant)
         super.writeNbt(nbt)
     }
 
     private fun updateInventorySize() {
-        @Suppress("CAST_NEVER_SUCCEEDS")
-        (this as ChestInventoryAccessor).inventory = inventory.copyOf(material.size)
+        this.inventory(this.inventory().copyOf(material.size))
     }
 }

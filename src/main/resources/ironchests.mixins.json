@@ -5,8 +5,7 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "ChestInventoryAccessor",
-    "ChestMixin",
-    "ExplosionMixin"
+    "ChestMixin"
   ],
   "server": [],
   "client": [],

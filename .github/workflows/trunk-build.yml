@@ -9,8 +9,9 @@ permissions:
   packages: write
 
 env:
-  GITHUB_USE_PACKAGE_REGISTRY: true
-  MODRINTH_USE: false
+  GPR_PUBLISH: true
+  GLASS_MAVEN_PUBLISH: true
+  MODRINTH_PUBLISH: false
 
 jobs:
   build:
@@ -25,12 +26,11 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
       - name: Build with Gradle
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: build
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew build
 
       - name: Deploy release
         uses: "marvinpinto/action-automatic-releases@latest"
@@ -43,8 +43,8 @@ jobs:
             build/libs/*.jar
 
       - name: Publish maven package
-        uses: gradle/gradle-build-action@v2
-        with:
-          arguments: upload
+        run: ./gradlew upload
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GLASS_MAVEN_USERNAME: ${{ secrets.GLASS_MAVEN_USERNAME }}
+          GLASS_MAVEN_PASSWORD: ${{ secrets.GLASS_MAVEN_PASSWORD }}

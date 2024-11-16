@@ -30,10 +30,20 @@
       },
       {
         "adapter": "kotlin",
-        "value": "net.zekromaster.minecraft.ironchests.IronChestsUpgradesEntrypoint"
+        "value": "net.zekromaster.minecraft.ironchests.upgrades.BlastProofUpgrade"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "net.zekromaster.minecraft.ironchests.upgrades.TierUpgrades"
+      },
+      {
+        "adapter": "kotlin",
+        "value": "net.zekromaster.minecraft.ironchests.upgrades.UpgradeStorageEntrypoint"
       }
     ],
-    "stationapi:event_bus_client": [],
+    "stationapi:event_bus_client": [
+
+    ],
     "stationapi:event_bus_server": []
   },
   "mixins": [
@@ -43,6 +53,7 @@
   "depends": {
     "minecraft": "1.0.0-beta.7.3",
     "stationapi": [">=2.0-alpha.2", "<2.0-alpha.3"],
-    "fabric-language-kotlin": ">=1.11.0+kotlin.2.0.0"
+    "fabric-language-kotlin": ">=1.11.0+kotlin.2.0.0",
+    "terminal": ">=0.2.0-SNAPSHOT"
   }
 }

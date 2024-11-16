@@ -2,35 +2,49 @@ import java.nio.charset.Charset
 
 plugins {
     kotlin("jvm") version "2.0.0"
-    id("babric-loom") version "1.6.2"
+    id("fabric-loom") version "1.8.9"
+    id("babric-loom-extension") version "1.8.9"
     id("maven-publish")
     id("com.modrinth.minotaur") version "2.+"
 }
 
+
+fun getPropertyOrEnvVar(property: String, envVar: String): String =
+    getPropertyOrEnvVar(property, envVar) { it ?: "" }
+
+fun getToggle(property: String, envVar: String): Boolean = getPropertyOrEnvVar(property, envVar) { it.toBoolean()}
+
+fun <T> getPropertyOrEnvVar(property: String, envVar: String, op: (String?) -> T): T =
+    op(project.findProperty(property) as String? ?: System.getenv(envVar))
 
 val maven_group: String by project
 val minecraft_version: String by project
 val yarn_mappings: String by project
 val loader_version: String by project
 val stapi_version: String by project
-val gcapi_version: String by project
-val howmanyitems_version: String by project
+val ami_version: String by project
+val bhcreative_version: String by project
 val modmenu_version: String by project
 val archives_base_name: String by project
 val next_version: String by project
 val artifact_id: String by project
 val api_version: String by project
 
-val use_github_packages = (project.findProperty("gpr.use") as String? ?: System.getenv("GITHUB_USE_PACKAGE_REGISTRY") ?: "false").toBoolean()
-val gh_username = project.findProperty("gpr.username") as String? ?: System.getenv("GITHUB_ACTOR")
-val gh_token = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+val publish_to_github_packages = getToggle("gpr.publish", "GPR_PUBLISH")
+val gh_username = getPropertyOrEnvVar("gpr.username", "GITHUB_ACTOR")
+val gh_token = getPropertyOrEnvVar("gpr.key", "GITHUB_TOKEN")
 val gh_repo = project.findProperty("gpr.repo") as String
 
-val use_modrinth = (project.findProperty("modrinth.use") as String? ?: System.getenv("MODRINTH_USE") ?: "false").toBoolean()
+val publish_to_modrinth  = getToggle("modrinth.publish", "MODRINTH_PUBLISH")
 val modrinth_id = project.findProperty("modrinth.id") as String
-val modrinth_token = project.findProperty("modrinth.token") as String? ?: System.getenv("MODRINTH_TOKEN")
+val modrinth_token = getPropertyOrEnvVar("modrinth.token", "MODRINTH_TOKEN")
+
+val publish_to_glass_maven  = getToggle("glass.publish", "GLASS_MAVEN_PUBLISH")
+val glass_username = getPropertyOrEnvVar("glass.username", "GLASS_MAVEN_USERNAME")
+val glass_password = getPropertyOrEnvVar("glass.password", "GLASS_MAVEN_PASSWORD")
 
 val releasing = project.hasProperty("releasing")
+
 
 java {
     withSourcesJar()
@@ -48,15 +62,6 @@ tasks.jar {
 }
 
 
-loom {
-    @Suppress("UnstableApiUsage")
-    mixin {
-        useLegacyMixinAp = true
-    }
-    customMinecraftManifest.set("https://babric.github.io/manifest-polyfill/${minecraft_version}.json")
-    intermediaryUrl.set("https://maven.glass-launcher.net/babric/babric/intermediary/%1\$s/intermediary-%1\$s-v2.jar")
-}
-
 repositories {
     maven {
         name = "Babric"
@@ -68,15 +73,9 @@ repositories {
         url = uri("https://maven.glass-launcher.net/releases")
     }
 
-    if (use_github_packages) {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/Zekromaster/*") // Github Package
-            credentials {
-                username = gh_username
-                password = gh_token
-            }
-        }
+    maven {
+        name = "Glass Snapshots"
+        url = uri("https://maven.glass-launcher.net/snapshots")
     }
 
     maven(uri("https://jitpack.io"))
@@ -106,18 +105,36 @@ dependencies {
     modImplementation("net.modificationstation:StationAPI:${stapi_version}")
 
     // Optional, but convenient mods for mod creators and users alike.
-    modImplementation("com.github.calmilamsy:ModMenu:${modmenu_version}") {
+    modRuntimeOnly("net.glasslauncher.mods:ModMenu:${modmenu_version}") {
         isTransitive = false
     }
-    modImplementation("net.glasslauncher.mods:GlassConfigAPI:${gcapi_version}") {
+
+    modRuntimeOnly("net.glasslauncher.mods:glass-networking:1.0.2") {
         isTransitive = false
     }
-    modImplementation("net.glasslauncher:HowManyItems-Fabric-Unofficial:${howmanyitems_version}") {
+
+    modRuntimeOnly("me.carleslc:Simple-Yaml:1.8.4")
+    modRuntimeOnly("net.glasslauncher.mods:GlassConfigAPI:3.0.0") {
         isTransitive = false
     }
+
+    modRuntimeOnly("net.glasslauncher.mods:AlwaysMoreItems:${ami_version}") {
+        isTransitive = false
+    }
+
+    modRuntimeOnly("com.github.matthewperiut:retrocommands:0.5.2") {
+        isTransitive = false
+    }
+
+    modRuntimeOnly ("maven.modrinth:bh-creative:${bhcreative_version}") {
+        isTransitive = false
+    }
+
     modImplementation("net.fabricmc:fabric-language-kotlin:1.11.0+kotlin.2.0.0") {
         exclude("net.fabricmc")
     }
+
+    modImplementation("net.zekromaster.minecraft:terminal:0.2.0-SNAPSHOT")
 }
 
 tasks {
@@ -138,15 +155,15 @@ tasks.jar {
     }
 }
 
-if (use_github_packages) {
-    publishing {
-        publications {
-            register("mavenJava", MavenPublication::class) {
-                artifactId = artifact_id
-                from(components["java"])
-            }
+publishing {
+    publications {
+        register("mavenJava", MavenPublication::class) {
+            artifactId = artifact_id
+            from(components["java"])
         }
-        repositories {
+    }
+    repositories {
+        if (publish_to_github_packages) {
             maven {
                 name = "GitHubPackages"
                 url = uri("https://maven.pkg.github.com/${gh_repo}") // Github Package
@@ -156,10 +173,20 @@ if (use_github_packages) {
                 }
             }
         }
+        if (publish_to_glass_maven) {
+            maven {
+                name = "GlassMaven"
+                url = uri("https://maven.glass-launcher.net/${if (releasing) "releases" else "snapshots"}")
+                credentials {
+                    username = glass_username
+                    password = glass_password
+                }
+            }
+        }
     }
 }
 
-if (use_modrinth) {
+if (publish_to_modrinth) {
     modrinth {
         token.set(modrinth_token)
         projectId.set(modrinth_id)
@@ -171,6 +198,7 @@ if (use_modrinth) {
         dependencies {
             required.project("stationapi")
             required.project("fabric-language-kotlin")
+            required.project("terminal-stapi")
         }
         syncBodyFrom = project.file("README.md").readText(Charset.forName("UTF-8"))
     }
@@ -182,7 +210,7 @@ if (use_modrinth) {
 
 task("upload") {
     dependsOn(tasks.publish)
-    if (use_modrinth && releasing) {
+    if (publish_to_modrinth && releasing) {
         dependsOn(tasks.modrinth)
     }
 }
